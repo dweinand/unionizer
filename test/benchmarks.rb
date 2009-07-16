@@ -3,7 +3,7 @@ $LOAD_PATH << File.join(File.join(File.dirname(__FILE__), '..'), 'lib')
 require "rubygems"
 require 'mysql'
 require "unionizer"
-require "../init"
+require File.join(File.join(File.dirname(__FILE__), '..'), 'init')
 
 gem 'thoughtbot-factory_girl'
 require 'factory_girl'
@@ -71,8 +71,20 @@ Benchmark.bmbm do |x|
   x.report('union: ') { TIMES.times {
     Post.all(:union => [
       {:conditions => {:user_id => 2}},
-      {:conditions => {:category_id => 4}},
+      {:conditions => {:category_id => 4}}
     ])
+  }}
+  x.report('union (named scope): ') { TIMES.times {
+    Post.unioned(
+      {:conditions => {:user_id => 2}},
+      {:conditions => {:category_id => 4}}
+    ).all
+  }}
+  x.report('union (nested named scope): ') { TIMES.times {
+    Post.unioned(
+      Post.scoped({:conditions => {:user_id => 2}}),
+      Post.scoped({:conditions => {:category_id => 4}})
+    ).all
   }}
   x.report('or (naked):') { TIMES.times {
     Post.find_by_sql(["select * from posts where user_id = ? OR category_id = ?", 2, 4])

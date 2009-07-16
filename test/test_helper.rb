@@ -12,7 +12,7 @@ gem 'thoughtbot-factory_girl'
 require 'factory_girl'
 
 require "unionizer"
-require "../init"
+require File.join(File.join(File.dirname(__FILE__), '..'), 'init')
 
 ActiveRecord::Base.logger = Logger.new(File.dirname(__FILE__) + "/debug.log")
 ActiveRecord::Base.establish_connection({
