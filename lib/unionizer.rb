@@ -10,8 +10,8 @@ module Unionizer
     extend ClassMethods
     metaclass::VALID_FIND_OPTIONS << :union
     
-    named_scope :unioned, lambda{|*args|
-      args.map! {|a| a.respond_to?(:scope) ? a.scope(:find) : a}
+    named_scope :unioned, lambda{|args|
+      args.to_a.map! {|a| a.respond_to?(:scope) ? a.scope(:find) : a}
       {:union => args}
     }
   end
