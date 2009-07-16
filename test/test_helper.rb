@@ -38,6 +38,13 @@ class Post < ActiveRecord::Base
   named_scope :recent, {:order => 'category_id DESC'}
   named_scope :oldest, {:order => 'category_id ASC'}
   named_scope :latest, {:limit => 1}
+  named_scope :with_user_id, lambda {|id| {:conditions => {:user_id => id}}}
+  named_scope :with_category_id, lambda {|id| {:conditions => {:category_id => id}}}
+  named_scope :scope_with_union, lambda {|u,c| {:union => [
+    {:conditions => {:user_id => u}},
+    {:conditions => {:category_id => c}}
+  ]}}
+  named_scope :with_category, {:conditions => 'category_id is not null'}
 end
 
 Factory.sequence :title do |n|

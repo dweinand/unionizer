@@ -15,6 +15,44 @@ class UnionizerTest < ActiveSupport::TestCase
     assert_same_elements([@post, @other_post], posts)
   end
   
+  def test_should_find_with_named_unioned_scope
+    posts = Post.unioned({:conditions => {:user_id => @post.user_id}},
+      {:conditions => {:category_id => @other_post.category_id}}).all
+    assert_same_elements([@post, @other_post], posts)
+  end
+  
+  def test_should_find_with_named_unioned_scope_and_scopes
+    posts = Post.unioned(
+      Post.with_user_id(@post.user_id),
+      Post.with_category_id(@other_post.category_id)
+    ).all
+    assert_same_elements([@post, @other_post], posts)
+  end
+  
+  def test_should_find_with_named_unioned_scope_and_chained_scopes
+    posts = Post.unioned(
+      Post.with_user_id(@post_without_category.user_id).with_category,
+      Post.with_category_id(@other_post.category_id)
+    ).all
+    assert_same_elements([@other_post], posts)
+  end
+  
+  # def test_should_find_with_merged_named_unioned_scopes
+  #   posts = Post.unioned({:conditions => {:user_id => @post.user_id}}).
+  #     unioned({:conditions => {:category_id => @other_post.category_id}}).all
+  #   assert_same_elements([@post, @other_post], posts)
+  # end
+  
+  def test_should_find_with_scoped_union
+    posts = Post.scope_with_union(@post.user_id, @other_post.category_id).all
+    assert_same_elements([@post, @other_post], posts)
+  end
+  
+  def test_should_find_with_scoped_union_and_conodition
+    posts = Post.scope_with_union(@post_without_category.user_id, @other_post.category_id).with_category.all
+    assert_same_elements([@other_post], posts)
+  end
+  
   def test_should_find_with_union_and_shared_conditionals
     posts = Post.all(:union => [
       {:conditions => {:user_id => @post_without_category.user_id}},
