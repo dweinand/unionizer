@@ -21,14 +21,14 @@ module Unionizer
     case ::ActiveRecord::VERSION::MINOR
     when 1
       def construct_finder_sql(options, scope=scope(:find))
-        unless options[:union]
+        unless options[:union] || (scope && scope[:union])
           sql  = "SELECT #{options[:select] || (scope && scope[:select]) || ((options[:joins] || (scope && scope[:joins])) && quoted_table_name + '.*') || '*'} "
           sql << "FROM #{(scope && scope[:from]) || options[:from] || quoted_table_name} "
 
           add_joins!(sql, options, scope)
           add_conditions!(sql, options[:conditions], scope)
         else
-          add_unions!(sql="", options)
+          add_unions!(sql="", options, scope)
         end
 
         add_group!(sql, options[:group], scope)
@@ -40,14 +40,14 @@ module Unionizer
       end
     when 2
       def construct_finder_sql(options, scope=scope(:find))
-        unless options[:union]
+        unless options[:union] || (scope && scope[:union])
           sql  = "SELECT #{options[:select] || (scope && scope[:select]) || default_select(options[:joins] || (scope && scope[:joins]))} "
           sql << "FROM #{(scope && scope[:from]) || options[:from] || quoted_table_name} "
 
           add_joins!(sql, options[:joins], scope)
           add_conditions!(sql, options[:conditions], scope)
         else
-          add_unions!(sql="", options)
+          add_unions!(sql="", options, scope)
         end
 
         add_group!(sql, options[:group], scope)
