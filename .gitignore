@@ -1,0 +1,10 @@
+log/*
+tmp/**/*
+.DS_Store
+tmtags
+.rake_tasks*
+.cap_tasks*
+.irb.hist
+*.orig
+*.log
+*.db
