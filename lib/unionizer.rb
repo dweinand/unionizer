@@ -153,31 +153,31 @@ module Unionizer
   
     sql << ", #{options[:group_field]} AS #{options[:group_alias]}" if options[:group]
     
-    if scope && scope[:union]
-      options[:union] = (options[:union] || []) + scope[:union]
-    end
-    
-    if options[:union]
-      sql << " FROM (#{construct_finder_sql(:union => options[:union])}) u01"
-    elsif options[:from]
-      sql << " FROM #{options[:from]} "
+    if options[:union] || (scope && scope[:union])
+      sql << " FROM ("
+      add_unions!(sql, options, scope)
+      sql << ") u01"
     else
-      sql << " FROM (SELECT #{distinct}#{column_name}" if use_workaround
-      sql << " FROM #{connection.quote_table_name(table_name)} "
+      if options[:from]
+        sql << " FROM #{options[:from]} "
+      else
+        sql << " FROM (SELECT #{distinct}#{column_name}" if use_workaround
+        sql << " FROM #{connection.quote_table_name(table_name)} "
+      end
+  
+      joins = ""
+      add_joins!(joins, options[:joins], scope)
+  
+      if merged_includes.any?
+        join_dependency = ActiveRecord::Associations::ClassMethods::JoinDependency.new(self, merged_includes, joins)
+        sql << join_dependency.join_associations.collect{|join| join.association_join }.join
+      end
+  
+      sql << joins unless joins.blank?
+  
+      add_conditions!(sql, options[:conditions], scope)
+      add_limited_ids_condition!(sql, options, join_dependency) if join_dependency && !using_limitable_reflections?(join_dependency.reflections) && ((scope && scope[:limit]) || options[:limit])
     end
-  
-    joins = ""
-    add_joins!(joins, options[:joins], scope)
-  
-    if merged_includes.any?
-      join_dependency = ActiveRecord::Associations::ClassMethods::JoinDependency.new(self, merged_includes, joins)
-      sql << join_dependency.join_associations.collect{|join| join.association_join }.join
-    end
-  
-    sql << joins unless joins.blank?
-  
-    add_conditions!(sql, options[:conditions], scope)
-    add_limited_ids_condition!(sql, options, join_dependency) if join_dependency && !using_limitable_reflections?(join_dependency.reflections) && ((scope && scope[:limit]) || options[:limit])
   
     if options[:group]
       group_key = connection.adapter_name == 'FrontBase' ?  :group_alias : :group_field

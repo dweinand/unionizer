@@ -145,6 +145,14 @@ class UnionizerTest < ActiveSupport::TestCase
     assert_equal(2, post_count)
   end
   
+  def test_should_count_with_scoped_union_with_conditions
+    post_count = Post.with_category.unioned([
+      {:conditions => {:user_id => @post.user_id}},
+      {:conditions => {:category_id => @other_post.category_id}}
+    ]).count
+    assert_equal(2, post_count)
+  end
+  
   def test_should_cout_without_union
     post_count = Post.count({:conditions => {:user_id => @post.user_id}})
     assert_equal(1, post_count)
