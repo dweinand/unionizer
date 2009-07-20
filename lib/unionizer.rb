@@ -153,6 +153,10 @@ module Unionizer
   
     sql << ", #{options[:group_field]} AS #{options[:group_alias]}" if options[:group]
     
+    if scope && scope[:union]
+      options[:union] = (options[:union] || []) + scope[:union]
+    end
+    
     if options[:union]
       sql << " FROM (#{construct_finder_sql(:union => options[:union])}) u01"
     elsif options[:from]
